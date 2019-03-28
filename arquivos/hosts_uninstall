@@ -1,0 +1,10 @@
+[OSEv3:children]
+nodes 
+
+[OSEv3:vars]
+#ansible_ssh_user=root
+#openshift_deployment_type=origin
+
+[nodes]
+pxl1pscnd021.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv'}" openshift_schedulable=true
+

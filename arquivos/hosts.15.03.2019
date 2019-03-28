@@ -1,0 +1,202 @@
+# This is the default ansible 'hosts' file.
+#
+# It should live in /etc/ansible/hosts
+#
+#   - Comments begin with the '#' character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+[OSEv3:children]
+masters
+nodes
+etcd
+new_nodes
+
+[OSEv3:vars]
+
+# Install Logging:
+openshift_logging_install_logging=True
+
+# Install Elasticsearch with 3 replicas:
+openshift_logging_es_cluster_size=3
+openshift_logging_es_allow_external=True
+
+# Number of replicas:
+openshift_logging_es_number_of_replicas=1
+
+# Persistent volume for ES cluster:
+openshift_logging_es_pvc_storage_class_name=gluster
+openshift_logging_es_pvc_size=50G
+openshift_logging_es_pvc_dynamic=true
+openshift_logging_es_pvc_prefix=logging-es-
+
+# Days for Curator rotate logs and clean:
+openshift_logging_curator_default_days=7
+openshift_logging_curator_run_hour=3
+openshift_logging_curator_run_minute=10
+
+# Fluentd configuration (all nodes to recolect logs)
+openshift_logging_fluentd_audit_container_engine=true
+openshift_logging_fluentd_audit_file=/var/log/audit/audit.log
+
+# Other info:
+openshift_logging_journal_read_from_head=true
+openshift_logging_purge_logging=true
+openshift_logging_image_prefix=openshift/origin-
+openshift_logging_image_version=v3.7.0
+openshift_release=v3.7.0
+openshift_image_tag=v3.7.0
+use-journal=true
+
+# Configuro default registry:
+oreg_url='harbor.servicos.bb.com.br/openshift/origin-${component}:${version}'
+openshift_examples_modify_imagestreams=false
+
+#Disable checks
+openshift_disable_check=memory_availability,disk_availability,package_availability,docker_image_availability,docker_storage
+
+#Do not install Metrics and Loggins:
+openshift_metrics_install_metrics=true
+
+# Configuro para instalar metrics con nfs na instalacion:
+#openshift_hosted_metrics_deploy=true
+#openshift_hosted_metrics_storage_kind=nfs
+#openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_metrics_storage_host=172.20.47.147
+#openshift_hosted_metrics_storage_nfs_directory=/root_vdm_4/PNN1LNXDF002/METRICS
+#openshift_hosted_metrics_storage_volume_name=metrics
+#openshift_hosted_metrics_storage_volume_size=100Gi
+
+# Configuro para instalar logging con nfs na instalacion:
+#openshift_hosted_logging_deploy=true
+#openshift_hosted_logging_storage_kind=nfs
+#openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_logging_storage_host=172.20.47.153
+#openshift_hosted_logging_storage_nfs_directory=/root_vdm_4/PNN1LNXDF003/LOGS
+#openshift_hosted_logging_storage_volume_name=logging
+#openshift_hosted_logging_storage_volume_size=100Gi
+
+# Ansible user:
+ansible_ssh_user=root
+
+# Openshift network configuration:
+openshift_master_portal_net=3.3.0.0/16
+osm_cluster_network_cidr=4.4.0.0/16
+osm_host_subnet_length=9
+
+# Configure SSL cert BB:
+openshift_master_named_certificates=[{"certfile": "/etc/origin/master/paas.servicos.bb.com.br.crt", "keyfile": "/etc/origin/master/paas.servicos.bb.com.br.key", "cafile": "/etc/origin/master/ca.crt"}]
+
+# This variable sets the SSH user for the installer to use and defaults to root.
+ansible_ssh_user=root
+
+# Type of instalation (origin = free, openshift-enterprise = paid)
+#deployment_type=origin
+openshift_deployment_type=origin
+openshift_deployment_subtype=registry
+
+# LDAP auth
+#openshift_master_identity_providers=[{'name': 'bb_ldap', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'bindDN': 'uid=pup00usr,ou=bind,ou=usuarios,ou=acesso,O=BB,C=BR', 'bindPassword': 'ot95s7qb', 'ca': '/etc/ssl/certs/bbcerts.pem', 'insecure': 'false', 'url': 'ldap://aplic.ldapbb.bb.com.br:389'}]
+
+# Configuring the ldap ca certificate
+openshift_master_ldap_ca_file=/etc/ssl/certs/bbcerts.pem
+
+
+# Native high availbility cluster method with optional load balancer.
+# If no lb group is defined installer assumes that a load balancer has
+# been preconfigured. For installation the value of
+# openshift_master_cluster_hostname must resolve to the load balancer
+# or to one or all of the masters defined in the inventory if no load
+# balancer is present.
+openshift_master_cluster_method=native
+openshift_master_cluster_hostname=openshift-nuvem.servicos.bb.com.br
+openshift_master_cluster_public_hostname=paas.servicos.bb.com.br
+openshift_master_default_subdomain=apps.openshift-nuvem.servicos.bb.com.br
+
+# Network plugin to use
+os_sdn_network_plugin_name=redhat/openshift-ovs-networkpolicy
+
+# apply updated node defaults
+openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
+
+# enable ntp on masters to ensure proper failover
+openshift_clock_enabled=true
+
+# Change default port to 443
+openshift_master_api_port=443
+openshift_master_console_port=443
+
+# config options for docker (/etc/sysconfig/docker)
+openshift_docker_options="--ip-forward=true --iptables=true --ip-masq=true --selinux-enabled=true -G docker --bip 1.1.1.1/16 --mtu 1450 --dns 10.8.4.1 --dns 172.18.51.11 --dns 172.18.51.12 --dns-search dispositivos.bb.com.br --log-driver=json-file --log-opt max-size=50m --block-registry docker.io --insecure-registry harbor.servicos.bb.com.br --insecure-registry=3.3.0.0/16 --add-registry harbor.servicos.bb.com.br"
+
+# where is going to create registry and router containers:
+openshift_registry_selector='region=nodes'
+openshift_hosted_router_selector='region=nodes'
+
+
+[ansible]
+pxl1lnxan001.dispositivos.bb.com.br
+
+# host group for masters
+[masters]
+pxl1pscms101.dispositivos.bb.com.br
+pxl1pscms102.dispositivos.bb.com.br
+pxl1pscms103.dispositivos.bb.com.br
+pxl1pscms201.dispositivos.bb.com.br
+pxl1pscms202.dispositivos.bb.com.br
+
+# host group for etcd
+[etcd]
+pxl1pscet101.dispositivos.bb.com.br
+pxl1pscet102.dispositivos.bb.com.br
+pxl1pscet201.dispositivos.bb.com.br
+
+
+# host group for nodes, includes region info
+[nodes]
+pxl1pscms10[1:3].dispositivos.bb.com.br openshift_node_labels="{'region': 'infra', 'zone': 'sedeiv'}" openshift_schedulable=false
+pxl1pscms20[1:2].dispositivos.bb.com.br openshift_node_labels="{'region': 'infra', 'zone': 'sedeiv'}" openshift_schedulable=false
+pxl1pscnd10[1:6].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true 
+pxl1pscnd20[1:2].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true 
+pxl1pscnd10[7:8].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'infra': 'yes'}" openshift_schedulable=true
+pxl1pscnd20[3:4].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true
+#pxl1pscnd20[5:6].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'infra': 'yes'}" openshift_schedulable=true
+#VLAN 219 - INTERSOLUÃS BALANCEADA CCT I
+dxl1pscnd00[1:4].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'desenv'}" openshift_schedulable=true
+#VLAN 211 - HOMOLOGACAO CCT I    
+hxl1pscnd00[1:4].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'homologa'}" openshift_schedulable=true
+#VLAN 2068 - INTERNET SOLUÃS BALANCEADA CCT II
+pxl1pscnd01[7:9].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true
+pxl1pscnd020.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true
+#VLAN 125 - INTERSOLUÃS BALANCEADA CCT I
+pxl1pscnd00[5:8].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv'}" openshift_schedulable=true
+#pxl1pscnd00[6:8].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv'}" openshift_schedulable=true
+#VLAN 2820 - GIR BALANCEADA CCT II
+pxl1pscnd02[3:4].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig'}" openshift_schedulable=true
+#VLAN 2258 - WEB SERVIÃ COMPARTILHADOS DESENV CCT II
+pxl1pscnd01[1:2].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'srvcomp'}" openshift_schedulable=true
+pxl1pscnd009.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'srvcomp'}" openshift_schedulable=true
+pxl1pscnd010.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'srvcomp'}" openshift_schedulable=true
+#VLAN 2258 - SERVICO-COMP-WEB-LB
+pxl1pscnd0[26:27].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'srvcompprd', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd036.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'srvcompprd', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#pxl1pscnd0[30:31].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'srvcompprd', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#VLAN - EWNET
+pxl1pscnd0[30:31].dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'srvcompprd', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd032.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'ewnet', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd033.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'ewnet', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd034.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'ewnet', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd035.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'ewnet', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd037.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'capdig', 'ambiente': 'srvcompprd', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#OUTROS
+pxl1pscnd038.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'exnetprd', 'sfd': 'yes', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd039.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'exnetprd', 'sfd': 'yes', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd042.dispositivos.bb.com.br openshift_node_labels="{'zone': 'sedeiv', 'rede': 'outros', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+pxl1pscnd043.dispositivos.bb.com.br openshift_node_labels="{'zone': 'sedeiv', 'rede': 'outros', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+
+[new_nodes]
+#pxl1pscnd038.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'exnetprd', 'sfd': 'yes', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#pxl1pscnd039.dispositivos.bb.com.br openshift_node_labels="{'region': 'nodes', 'zone': 'sedeiv', 'ambiente': 'exnetprd', 'sfd': 'yes', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#pxl1pscnd042.dispositivos.bb.com.br openshift_node_labels="{'zone': 'sedeiv', 'rede': 'outros', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
+#pxl1pscnd043.dispositivos.bb.com.br openshift_node_labels="{'zone': 'sedeiv', 'rede': 'outros', 'logging-infra-fluentd': 'true'}" openshift_schedulable=true
