@@ -1,0 +1,3 @@
+tag=`curl https://registry.hub.docker.com/v2/repositories/rocketchat/caixa.rocket.chat/tags/|jq '."results"[]["name"]' | head -n1 | sed 's/"//g'`
+
+docker pull rocketchat/caixa.rocket.chat:$tag
