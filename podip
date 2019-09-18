@@ -1,0 +1,20 @@
+140
+
+The simplest answer is to ensure that your pod or replication controller yaml/json files add the pod IP as an environment variable by adding the config block defined below. (the block below additionally makes the name and namespace available to the pod)
+
+    env:
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+Recreate the pod/rc and then try
+
+echo $MY_POD_IP
