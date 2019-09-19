@@ -1,0 +1,157 @@
+[OSEv3:vars]
+ansible_ssh_user=root
+ansible_become=true
+
+openshift_deployment_type=origin
+openshift_release="3.11"
+openshift_clock_enabled=true
+os_firewall_use_firewalld=true
+os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
+openshift_enable_unsupported_configurations=true
+openshift_master_overwrite_named_certificates=true
+
+openshift_master_api_port=443
+openshift_master_console_port=443
+
+openshift_template_service_broker_namespaces=['openshift']
+
+openshift_master_audit_config={"enabled": true, "auditFilePath": "/var/lib/origin/openshift-audit.log", "maximumFileRetentionDays": 14, "maximumFileSizeMegabytes": 500, "maximumRetainedFiles": 5}
+#openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80'], 'kube-reserved': ['cpu=250m,memory=150M'], 'system-reserved': ['cpu=250m,memory=150M']}
+openshift_docker_options="--selinux-enabled --insecure-registry=172.30.0.0/16 --insecure-registry=binario.caixa:4052 --add-registry=binario.caixa:4052 --log-opt max-size=1M --log-opt max-file=3"
+
+openshift_master_cluster_method=native
+openshift_master_cluster_hostname=cloudaplinterno.caixa
+openshift_master_cluster_public_hostname=cloudapl.caixa
+openshift_master_named_certificates=[{"certfile": "/etc/ansible/cloudapl.caixa.crt", "keyfile": "/etc/ansible/cloudapl.caixa.key", "names": ["cloudapl.caixa"], "cafile": "/etc/ansible/ca.caixa.crt"}]
+
+openshift_master_default_subdomain=apl.caixa
+
+#openshift_master_identity_providers=[{'name': 'my_ldap_provider', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'bindDN': '', 'bindPassword': '', 'insecure': 'true', 'url': 'ldap://intranet.openldap.corecaixa/ou=people,o=caixa?uid'}]
+
+openshift_disable_check="disk_availability,memory_availability,package_version,docker_image_availability,docker_storage"
+
+#Proxy
+openshift_generate_no_proxy_hosts=true
+openshift_http_proxy=http://proxyprd.caixa:80
+openshift_https_proxy=http://proxyprd.caixa:80
+openshift_no_proxy='.caixa,.corecaixa,.caixa.gov.br,172.30.0.0/16,10.121.96.0/23'
+
+## Cluster Monitoring
+openshift_cluster_monitoring_operator_install=true
+openshift_cluster_monitoring_operator_prometheus_storage_capacity=100Gi
+openshift_cluster_monitoring_operator_alertmanager_storage_capacity=2Gi
+openshift_cluster_monitoring_operator_prometheus_storage_enabled=true
+openshift_cluster_monitoring_operator_alertmanager_storage_enabled=true
+openshift_cluster_monitoring_operator_prometheus_storage_class_name=glusterfs-storage
+openshift_cluster_monitoring_operator_alertmanager_storage_class_name=glusterfs-storage
+
+## Metrics Server
+openshift_metrics_server_install=True
+openshift_metrics_server_resolution=30s
+openshift_metrics_server_project=openshift-metrics-server
+
+#openshift_hosted_etcd_storage_kind=nfs
+#openshift_hosted_etcd_storage_host=10.121.96.253
+#openshift_hosted_etcd_storage_nfs_directory=/exports
+#openshift_hosted_etcd_storage_volume_name=etcd-vol
+#openshift_hosted_etcd_storage_access_modes=["ReadWriteOnce"]
+#openshift_hosted_etcd_storage_volume_size=20Gi
+#openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
+#
+#openshift_hosted_registry_storage_kind=nfs
+#openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+#openshift_hosted_registry_nfs_options='*(rw,root_squash)
+#openshift_hosted_registry_storage_host=10.121.96.253
+#openshift_hosted_registry_storage_nfs_directory=/exports
+#openshift_hosted_registry_storage_volume_name=registry
+#openshift_hosted_registry_storage_volume_size=200Gi
+
+#openshift_metrics_install_metrics=true
+#openshift_hosted_metrics_deploy=true
+#openshift_hosted_metrics_storage_kind=nfs
+#openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_metrics_storage_host=10.121.96.253
+#openshift_hosted_metrics_storage_nfs_directory=/exports
+#openshift_hosted_metrics_storage_volume_name=metrics
+#openshift_hosted_metrics_storage_volume_size=150Gi
+#openshift_hosted_metrics_storage_labels={'storage': 'metrics'}
+#openshift_metrics_start_cluster=true
+#openshift_metrics_image_version=v3.9
+#openshift_metrics_duration=30
+##openshift_metrics_cassandra_pvc_size=150Gi
+##openshift_metrics_cassandra_storage_type=pv
+
+#openshift_logging_install_logging=true
+#openshift_logging_install_eventrouter=true
+#openshift_hosted_logging_deploy=true
+#openshift_hosted_logging_storage_kind=nfs
+#openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_logging_storage_host=10.121.96.253
+#openshift_hosted_logging_storage_nfs_directory=/exports
+#openshift_hosted_logging_storage_volume_name=logging-es
+#openshift_hosted_logging_storage_volume_size=250Gi
+#openshift_hosted_logging_storage_labels={'storage': 'logging-es'}
+#openshift_logging_image_version=v3.9
+#openshift_logging_eventrouter_replicas=1
+#openshift_logging_curator_default_days=30
+#openshift_logging_curator_run_timezone="America/Sao_Paulo"
+#openshift_logging_es_pvc_size=250Gi
+
+openshift_storage_glusterfs_is_native=false
+openshift_storage_glusterfs_block_deploy=false
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=true
+openshift_storage_glusterfs_heketi_is_native=true
+openshift_storage_glusterfs_heketi_executor=ssh
+openshift_storage_glusterfs_heketi_ssh_port=22
+openshift_storage_glusterfs_heketi_ssh_user=root
+openshift_storage_glusterfs_heketi_ssh_sudo=false
+openshift_storage_glusterfs_heketi_ssh_keyfile="/root/.ssh/id_rsa"
+
+### Registry dynamic Settings
+#openshift_hosted_registry_storage_kind=glusterfs
+#openshift_hosted_registry_storage_volume_size=100Gi
+#openshift_hosted_registry_selector="node-role.kubernetes.io/infra=true"
+#openshift_hosted_registry_replicas=3
+
+#openshift_storage_glusterfs_registry_namespace=infra-storage
+#openshift_storage_glusterfs_registry_block_deploy=true
+#openshift_storage_glusterfs_registry_block_storageclass=true
+openshift_storage_glusterfs_registry_block_storageclass_default=false
+#openshift_storage_glusterfs_registry_block_host_vol_size=150
+#openshift_storage_glusterfs_registry_is_native=false
+#openshift_storage_glusterfs_registry_heketi_is_native=true
+#openshift_storage_glusterfs_registry_heketi_executor=ssh
+#openshift_storage_glusterfs_registry_heketi_ssh_port=22
+#openshift_storage_glusterfs_registry_heketi_ssh_user=root
+#openshift_storage_glusterfs_registry_heketi_ssh_sudo=false
+#openshift_storage_glusterfs_registry_heketi_ssh_keyfile="/etc/ansible/id_rsa"
+
+
+[OSEv3:children]
+masters
+etcd
+nodes
+#glusterfs
+#glusterfs_registry
+
+[masters]
+cbrnpapllx0[03:05].intra.caixa.gov.br
+
+[etcd]
+cbrnpapllx0[03:05].intra.caixa.gov.br
+
+[nodes]
+cbrnpapllx0[03:05].intra.caixa.gov.br openshift_node_group_name='node-config-master'
+cbrnpapllx0[08:10].intra.caixa.gov.br openshift_node_group_name='node-config-infra'
+cbrnpapllx0[13:20].intra.caixa.gov.br openshift_node_group_name='node-config-compute'
+
+#[glusterfs]
+#cbrnpaprlx003.intra.caixa.gov.br glusterfs_ip=10.121.96.32  glusterfs_devices='[ "/dev/sdb" ]'
+#cbrnpaprlx004.intra.caixa.gov.br glusterfs_ip=10.121.96.33  glusterfs_devices='[ "/dev/sdb" ]'
+#cbrnpaprlx005.intra.caixa.gov.br glusterfs_ip=10.121.96.34  glusterfs_devices='[ "/dev/sdb" ]'
+
+#[glusterfs_registry]
+#cbrnpaprlx028.intra.caixa.gov.br glusterfs_ip=10.121.96.251 glusterfs_devices='["/dev/sdb"]'
+#cbrnpaprlx029.intra.caixa.gov.br glusterfs_ip=10.121.96.252 glusterfs_devices='["/dev/sdb"]'
+#cbrnpaprlx030.intra.caixa.gov.br glusterfs_ip=10.121.96.255 glusterfs_devices='["/dev/sdb"]'
