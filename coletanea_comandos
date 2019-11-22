@@ -1,0 +1,282 @@
+                                                  #### COMANDOS UTILIZADOS NO OPENSHIFT (oc)
+
+01- Verificar a saúde dos etcd´s. Logar no master, e executar o comando abaixo:
+# etcdctl2 cluster-health
+
+02- Visualizar labels dos nodes
+# oc get nodes --show-labels=true
+
+03- Convertendo certificado .pem para .crt
+##### openssl x509 -outform der -in cert.pem -out cert.crt
+# openssl x509 -inform PEM -in C0788820237.cer -out teste.crt
+
+04- Visualizar um certificado (teste para ver qual dos comandos abre o certificado)
+# openssl x509 -in cloudprodutos.crt -text -noout
+# openssl x509 -text -inform PEM -in cloudprodutos.crt
+# openssl x509 -text -inform DER -in cloudprodutos.crt
+
+05- Atualizar o certificado apenas do master no OKD
+ -- Adicionar no arquivo de inventário a flag
+# openshift_master_overwrite_named_certificates=true
+
+ -- Após atualizar o certificado, executar os seguintes playbooks
+# <dir_onde_esta_openshift-ansible>/playbooks/openshift-master/certificates.yml
+# <dir_onde_esta_openshift-ansible>/playbooks/openshift-master/restart.yml
+
+OBS.: É extremamente importante que o certificado tenha o mesmo nome, pois caso não tenha, o playbook não atualizará o certificado, pois não encontrará, 
+      na base, o nome antigo para poder atualizar.
+
+06- Adicionar usuário como admin do cluster openshift
+# oc adm policy add-cluster-role-to-user cluster-admin <nome_do_usuario>
+
+07- Visualizando informações do IP dos namespaces (EGRESS IP)
+# oc get netnamespace
+
+08- Listar os usuários com regra de admin no cluster-admin
+# oc get clusterrolebinding -o json | jq '.items[] | select(.metadata.name |  startswith("cluster-admin")) | .userNames'
+
+09- Alterar um pod para outro node
+# oc project <nome_do_projeto_do_pod>
+# oc get dc
+# oc patch dc nome_deploymentconfig_do_projeto_do_node -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname": "nomeNode.com.br"}}}}}'
+
+10- Pesquisando um pod em todo o openshift
+# oc get pods --all-namespaces | grep rocketchat
+
+11- Visualizar os pods que deram problema
+# oc get pods --all-namespaces -o wide | egrep -v 'Running|Completed' | sort -k 8
+
+12- Incluir uma subnet em um node via egressip
+# oc patch hostsubnet <nome_do_node> -p '{"egressCIDRs": ["<end_rede/masq_rede>"]}'
+
+13- Incluir IP de saída para um determinado projeto
+# oc patch netnamespace <nome_do_projeto> -p '{"egressIPs": ["<end_IP>"]}'
+# oc get hostsubnet - Consultar
+
+	
+Um liveness probe checa se o container que esta configurado continua em execução. 
+Se o liveness probe falhar, o kubelet vai matar o container, que vai ser submetido a sua política de reinício.
+
+Um readiness probe checa se um container esta pronto para receber requisições de serviços. 
+Se o readiness probe falhar, o controlador de endpoint garante que o endereço IP foi removido de 
+todos os endpoints de serviços. Um readiness probe pode ser usado para mandar um sinal ao controlador
+de endpoint, que mesmo que o container esteja em execução, ele não deve receber qualquer tráfego a partir
+de um proxy
+
+14- Setar um node para não receber deploy de pods
+# oc adm manage-node <node1> <node2> --schedulable=false
+
+15- Limites
+-> nome do arquivo: quotas.yaml
+apiVersion: "v1"
+kind: "LimitRange"
+metadata:
+  name: "core-resource-limits"
+spec:
+  limits:
+    - type: "Pod"
+      max:
+        cpu: "8"
+        memory: "12Gi"
+      min:
+        cpu: "200m"
+        memory: "6Mi"
+    - type: "Container"
+      max:
+        cpu: "8"
+        memory: "12Gi"
+      min:
+        cpu: "100m"
+        memory: "4Mi"
+      default:
+        cpu: "300m"
+        memory: "200Mi"
+      defaultRequest:
+        cpu: "200m"
+        memory: "100Mi"
+      maxLimitRequestRatio:
+        cpu: "10"
+
+# oc project <nome_do_projeto>
+# oc create -f quotas.yaml
+# oc edit limits core-resource-limits
+
+16- Permitindo abrir página https no nprd2.
+-Para abrir qualquer URL HTTPS no ambiente NPRD2, deverá ser feito no DNS um apontamento
+-do router (url) para o IP 10.116.180.15
+
+17- Permitindo abrir página https no apl.
+-Para abrir qualquer URL HTTPS no ambiente APL, deverá ser feito no DNS um apontamento
+-do router (url) para o IP 10.121.110.6
+
+18- Adicionar projeto do SCC/scc para imagem rodar como root
+# oc adm policy add-scc-to-user anyuid -z default -n <projeto>
+
+19- Metricas para fazer autoscaling por memoria
+# crie um arquivo com qualquer nome, exemplo: mem.yaml, com o seguinte conteúdo
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: rocketchat #Esse é o nome do deploymentConfig
+  name: rocketchat #Esse é o nome do deploymentConfig
+  namespace: rocketchat-prd #Esse é o nome do projeto
+spec:
+  maxReplicas: 10
+  minReplicas: 4
+  scaleTargetRef:
+    apiVersion: v1
+    kind: DeploymentConfig
+    name: rocketchat #Esse é o nome do deploymentConfig
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 50
+
+	 
+Depois criar o autoscaling no projeto e fazer o restart do serviço
+# oc create -f mem.yaml
+# master-restart api
+# master-restart controllers
+
+Para visualizar as metricas do autoscaling é:
+# oc get HorizontalPodAutoscaler
+ou
+# oc get horizontalpodautoscaler.autoscaling/rocketchat
+
+20- Visualizar os pods com os seus respectivos nodes
+# oc get -o wide pods
+
+
+======================
+The checkpoint to which the message is referring is under /var/lib/dockershim/. 
+You might try removing everything in that directory and doing a docker rm -f $(docker ps -a -q) to remove all existing docker containers to get back to a pristine state.
+
+
+21- Corrigir erro de certificado do node para o master. Geralmente quando o pod não está abrindo o terminal (shell), é por conta da perda do certificado entre o node e o master.
+- Verificar se o certificado entre o master e o node está OK
+# curl --key /etc/origin/master/master.kubelet-client.key --cert /etc/origin/master/master.kubelet-client.crt --cacert /etc/origin/master/ca.crt https://cbrdeaprlx039.extra.caixa.gov.br:10250/healthz
+
+- Caso não esteja OK, entrar no NODE que está com erro e executar os comandos abaixo
+# cd /etc/origin/node/certificates
+# cat kubelet-server-current.pem
+# vim kubelet.crt (extraído do kubelet-server-current.pem, do comando anterior)
+# vim kubelet.key (extraído do kubelet-server-current.pem, do comando anterior)
+
+- Reinicializar o serviço do node.
+# systemctl restart origin-node.service
+
+1 - desabilitar self provioner
+
+oc adm policy remove-cluster-role-from-group self-provisioner system:authenticated:oauth
+oc annotate clusterrolebinding.rbac self-provisioner 'rbac.authorization.kubernetes.io/autoupdate=false'
+
+https://docs.openshift.com/container-platform/3.11/admin_guide/managing_projects.html
+
+
+2 - Criar o template de projeto
+oc adm create-bootstrap-project-template -o yaml > template.yaml
+
+Manipular o template.yaml e incluir as configurações da CEF (file em anexo)
+
+oc create -f template.yaml -n default
+
+Alterar no master-config.yaml de todos os masters.
+projectRequestTemplate: "default/project-request"
+
+Reiniciar todos os masters
+
+Liberar acesso do route em todos os projetos
+oc label namespace default name=default
+
+https://docs.openshift.com/container-platform/3.11/admin_guide/managing_networking.html#admin-guide-networking-networkpolicy-setting-default
+https://docs.openshift.com/container-platform/3.11/admin_guide/managing_projects.html
+
+
+22- Diminuindo espaço ocupado pelos logs do journal
+# journalctl --vacuum-size=1G
+
+23- Importando imagem de um Registry para outro. 
+NPRD2 to NPRD-OLD	
+docker login -u p412811 docker-registry.default.svc:5000 -p nLOZQng1v5hVKkxdD2s7IS5SASFppAnPHlrntixw_8M
+docker login -u p412811 -p EjzpERVnrQ3erJ0dCTJl5S0dobC9Nvp6JVO1CQkWVNI docker-registry-default.nprd2.caixa
+oc image mirror --insecure=true docker-registry.default.svc:5000/openshift/jboss:7.0.5 docker-registry-default.nprd.caixa/openshift/jboss:7.0.5
+
+NPRD-OLD to APL
+docker login -u p412811 -p xrjRI7_mdhgPPbt7jHMpMolkPdbojcAgp-fvOMSNlVE docker-registry-default.nprd.caixa
+docker login -u p412811 docker-registry.default.svc:5000 -p 35gknWy0l_DF05IFIyeWrYRkDjJRMKs-0AVvp5I-Soo
+oc image mirror --insecure=true docker-registry-default.nprd.caixa/openshift/jboss:7.0.5 docker-registry.default.svc:5000/openshift/jboss:7.0.5
+
+
+/var/lib/postgresql/data
+
+
+
+So yeah, that's the problem. /var/lib/docker is for local engine storage. The Docker v2 registry image storage is completely different.
+
+You would be better off doing a docker save and docker load from one engine to the other:
+
+docker save -o myimages.tar $(docker images --format '{{.Repository}}:{{.Tag}}') > myimages.tar
+
+
+docker pull $original_image --all-tags
+
+98137 3371
+
+
+
+ 2090  19/08/19 10:56:29 -> docker login -u p412811 docker-registry-default.nprd2.caixa -p zOVhkTYHaHU9aKbFz8nb3Z_DGHNzutnWTodQPIa9Lw4
+ 2093  19/08/19 10:56:55 -> docker login -u p412811 docker-registry.default.svc:5000 -p bIxOLtwr89UQC94IAJj2eng_xOMOhPMDR9XTk8u6BxU
+ 2094  19/08/19 10:57:02 -> #oc image mirror --insecure=true docker-registry-default.nprd2.caixa/openshift/$IMAGE:$TAG docker-registry.default.svc:5000/openshift/$IMAGE:$TAG
+ 2097  19/08/19 10:57:37 -> oc image mirror --insecure=true docker-registry-default.nprd2.caixa/openshift/$IMAGE:$TAG docker-registry.default.svc:5000/openshift/$IMAGE:$TAG
+ 
+ 
+ This is still an issue on some 3.11 clusters.
+
+It's because of the finalizer 'kubernetes' not being removed from the project:
+
+  finalizers:
+  - kubernetes
+I cleared up 1000's of projects by following these steps:
+
+Do:
+oc get projects |grep Terminating |awk '{print $1}' > mylist
+
+Create and run this script to create a json file for each terminating project (while removing kubernetes finalizer):
+
+#!/bin/bash
+filename='mylist'
+while read p; do
+    echo $p
+    oc get project $p -o json |grep -v "kubernetes" > $p.json
+done < $filename
+Run:
+kubectl proxy --port=8080 &
+4.Run this script to remove finalizer from running config:
+
+#!/bin/bash
+filename='mylist'
+while read p; do
+    curl -k -H "Content-Type: application/json" -X PUT --data-binary @$p.json localhost:8080/api/v1/namespaces/$p/finalize;
+done < $filename
+
+
+COMANDO "WHILE" PARA BLOCKCHAIN OU PARA ANALISAR ALGO
+while true; do for id in $(docker ps | grep -v NAME | grep nom-da-imagem | awk '{print $1}'); do docker logs $id; done; done
+
+
+----------------------------
+FROM docker-registry.default.svc:5000/openshift/jenkins:2
+
+USER root
+
+RUN yum -y remove git* && yum install -y https://centos7.iuscommunity.org/ius-release.rpm && yum -y install  git222
+
+USER 1001
+
+
+---------------------------------
+docker build --build-arg http_proxy=http://proxyprd.caixa:80 --build-arg https_proxy=http://proxyprd.caixa:80 -t jenkins-git .
+
+---------------------------------------------
