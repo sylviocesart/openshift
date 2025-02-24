@@ -1,2 +1,4 @@
 # openshift
-- Arquivos exemplos para criação/estuados do OpenShift.
+Comandos interessantes:
+- oc whoami --show-console -> Mostra a url para acessar a console web do openshift
+- 
