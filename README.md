@@ -8,6 +8,16 @@ strings de conexão com banco de dados, etc.
  - Somente é acessado por pods e recursos autorizados dentro do cluster
  - Secret são codificadas para então serem transmitidas 
  - Secret utiliza a base64 para codificar os config maps guardados no etcd
+Para criar uma secret podemos fazer assim:
+ - oc create secret, um exemplo seria:
+ - oc create secret generic my-secret --from-literal=username=myuser --from-literal=password=mypassword
+ - É possível criar secret para arquivos também, exemplo:
+ - oc create secret generic my-file-secret --from-file=credentials.txt
+O conteúdo do arquivo será usado para criar a secret
+O OpenShift prover tipos específios de secret para casos de uso comum, exemplo:
+  - Docker registry secrets e TLS secrets, exemplo
+  - oc create secret docker-registry my-registry-secret --docker-server=registry.example.com --docker-username=muyser --docker-password=mypassword --docker-email=myuser@example.com
+  - 
  - 
 
   
