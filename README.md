@@ -17,6 +17,9 @@ O conteúdo do arquivo será usado para criar a secret
 O OpenShift prover tipos específios de secret para casos de uso comum, exemplo:
   - Docker registry secrets e TLS secrets, exemplo
   - oc create secret docker-registry my-registry-secret --docker-server=registry.example.com --docker-username=muyser --docker-password=mypassword --docker-email=myuser@example.com
+  - Podemos utilizar o secret como variável de ambiente no yaml
+  - É possível importar variáveis para dentro do Openshift utilizando o "oc set env", exemplo:
+  - oc set env --from=secret/mysecret dc/myapp
   - 
  - 
 
