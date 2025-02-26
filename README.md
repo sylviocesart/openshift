@@ -1,7 +1,16 @@
 # openshift
-Comandos interessantes:
+  ------------------  Comandos interessantes ----------------------
 - oc whoami --show-console -> Mostra a url para acessar a console web do openshift
-- 
+- oc get pods -> visualiza os pods que estão no namespace/project atual
+- oc get pods -A -> visualiza os pods de todos os namespaces/projects
+-  
+
+
+
+
+
+
+
 
 
 
