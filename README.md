@@ -1,6 +1,6 @@
 # openshift
   ------------------  Comandos interessantes ----------------------
------- SECRETS ---
+------ SECRETS -----
 -> Secret -> São objetos que guardam dados sensíveis em um formato de chave-valor.
  -Usado para guardar tipos de dados como: password, token de autenticação, certificados SSL/TLS, chaves SSH
 strings de conexão com banco de dados, etc.
@@ -20,8 +20,10 @@ O OpenShift prover tipos específios de secret para casos de uso comum, exemplo:
   - Podemos utilizar o secret como variável de ambiente no yaml
   - É possível importar variáveis para dentro do Openshift utilizando o "oc set env", exemplo:
   - oc set env --from=secret/mysecret dc/myapp
-  - 
- - 
+------ ConfigMaps -----
+-> Semelhante ao Secret, porém o arquivo é em texto puro, não base64, caso tenha senha, essa precisa ser em texto puro
+Ou seja, o ConfigMaps guarda dados não sensíveis
+
 
   
 - oc whoami --show-console -> Mostra a url para acessar a console web do openshift
